@@ -1,0 +1,105 @@
+/* 공통 스타일 */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.button-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.button-primary:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+/* 로딩 애니메이션 */
+@keyframes perfectSpin {
+  0% { 
+    transform: rotate(0deg);
+  }
+  100% { 
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #007bff;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: perfectSpin 1s linear infinite;
+  display: inline-block;
+  margin-right: 8px;
+  /* 완벽한 원형 유지 */
+  flex-shrink: 0;
+  vertical-align: middle;
+  /* 부드러운 회전을 위한 최적화 */
+  box-sizing: border-box;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* 로딩 컨테이너 스타일 */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 30px;
+  position: relative;
+}
+
+.loading-spinner .spinner-only {
+  border: 6px solid rgba(255,255,255,0.2);
+  border-top: 6px solid #ffffff;
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  animation: perfectSpin 1.2s linear infinite;
+  margin: 0 auto;
+  box-sizing: border-box;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.loading-spinner .loading-text {
+  color: white;
+  font-size: 16px;
+  text-align: center;
+  /* 텍스트는 회전하지 않도록 고정 */
+  transform: none !important;
+  position: relative;
+  z-index: 2;
+}

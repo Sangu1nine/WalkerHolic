@@ -1,0 +1,641 @@
+.hardware-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.hardware-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20px 30px;
+  border-radius: 15px;
+  margin-bottom: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.back-button {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover {
+  background: #5a6fd8;
+  transform: translateY(-2px);
+}
+
+.hardware-header h1 {
+  color: #333;
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.scan-button {
+  background: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.scan-button:hover:not(:disabled) {
+  background: #45a049;
+  transform: translateY(-2px);
+}
+
+.scan-button.scanning {
+  background: #ff9800;
+  animation: pulse 1.5s infinite;
+}
+
+.scan-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.hardware-content {
+  display: grid;
+  gap: 30px;
+}
+
+/* 시스템 개요 */
+.system-overview {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+}
+
+.overview-card {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.overview-card h3 {
+  color: #333;
+  margin-bottom: 25px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+.status-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border-left: 4px solid #667eea;
+}
+
+.status-label {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.status-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+}
+
+.status-value.connected {
+  color: #4caf50;
+}
+
+.chart-card {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.chart-card h3 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* 기기 섹션 */
+.devices-section {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.devices-section h3 {
+  color: #333;
+  margin-bottom: 25px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.devices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.device-card {
+  background: #f8f9fa;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.device-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.device-card.selected {
+  border-color: #667eea;
+  background: #e3f2fd;
+}
+
+.device-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.device-info h4 {
+  color: #333;
+  margin: 0 0 5px 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.device-type {
+  color: #666;
+  font-size: 12px;
+  background: #e0e0e0;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.device-status {
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.device-metrics {
+  display: grid;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.metric {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.metric-label {
+  font-size: 14px;
+  color: #666;
+  min-width: 60px;
+}
+
+.metric-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  min-width: 40px;
+}
+
+/* 배터리 인디케이터 */
+.battery-indicator {
+  flex: 1;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.battery-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* 신호 강도 바 */
+.signal-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 16px;
+  flex: 1;
+}
+
+.signal-bar {
+  width: 4px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  transition: background-color 0.3s ease;
+}
+
+.signal-bar:nth-child(1) { height: 20%; }
+.signal-bar:nth-child(2) { height: 40%; }
+.signal-bar:nth-child(3) { height: 60%; }
+.signal-bar:nth-child(4) { height: 80%; }
+.signal-bar:nth-child(5) { height: 100%; }
+
+.signal-bar.active {
+  background: #4caf50;
+}
+
+.device-location {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.device-last-update {
+  color: #999;
+  font-size: 12px;
+}
+
+/* 기기 상세 정보 */
+.device-details {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.device-details h3 {
+  color: #333;
+  margin-bottom: 25px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.details-content {
+  display: grid;
+  gap: 30px;
+}
+
+.info-section {
+  margin-bottom: 25px;
+}
+
+.info-section h4 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 16px;
+  font-weight: 600;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 8px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.info-item label {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.info-item span {
+  font-size: 14px;
+  color: #333;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: white;
+  display: inline-block;
+  width: fit-content;
+}
+
+.status-badge.connected {
+  background: #4caf50;
+}
+
+.status-badge.disconnected {
+  background: #f44336;
+}
+
+.status-badge.standby {
+  background: #ff9800;
+}
+
+.status-badge.error {
+  background: #e91e63;
+}
+
+/* 기기 제어 */
+.device-actions {
+  margin-top: 20px;
+}
+
+.device-actions h4 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.action-btn.restart {
+  background: #2196f3;
+  color: white;
+}
+
+.action-btn.calibrate {
+  background: #ff9800;
+  color: white;
+}
+
+.action-btn.disconnect {
+  background: #f44336;
+  color: white;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* 차트 섹션 */
+.charts-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 30px;
+}
+
+/* 네트워크 정보 */
+.network-info {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.network-info h3 {
+  color: #333;
+  margin-bottom: 25px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.network-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.network-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border-left: 4px solid #667eea;
+}
+
+.network-label {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.network-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.network-strength {
+  font-size: 12px;
+  color: #4caf50;
+  font-weight: 500;
+}
+
+/* 유지보수 정보 */
+.maintenance-info {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.maintenance-info h3 {
+  color: #333;
+  margin-bottom: 25px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.maintenance-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.maintenance-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border-left: 4px solid #667eea;
+}
+
+.maintenance-label {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.maintenance-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.maintenance-value.next {
+  color: #ff9800;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 50vh;
+  gap: 40px;
+  position: relative;
+}
+
+.loading-spinner .spinner-only {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border: 6px solid rgba(255,255,255,0.2);
+  border-top: 6px solid #ffffff;
+  border-radius: 50%;
+  animation: perfectSpin 1.2s linear infinite;
+  box-sizing: border-box;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  backface-visibility: hidden;
+  margin: 0 auto;
+}
+
+.loading-spinner .loading-text {
+  font-size: 18px;
+  color: white;
+  text-align: center;
+  /* 텍스트는 회전하지 않도록 고정 */
+  transform: none !important;
+  position: relative;
+  z-index: 2;
+}
+
+/* 완벽한 원형 회전 애니메이션 */
+@keyframes perfectSpin {
+  0% { 
+    transform: rotate(0deg);
+  }
+  100% { 
+    transform: rotate(360deg);
+  }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .hardware-container {
+    padding: 15px;
+  }
+  
+  .hardware-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .hardware-header h1 {
+    font-size: 24px;
+  }
+  
+  .system-overview {
+    grid-template-columns: 1fr;
+  }
+  
+  .devices-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .charts-section {
+    grid-template-columns: 1fr;
+  }
+  
+  .status-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+  
+  .network-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+  
+  .maintenance-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .maintenance-item {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+} 

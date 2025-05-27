@@ -1,0 +1,3 @@
+timestamp,user_id,fall_detected,confidence_score,sensor_data
+2025-05-26T16:33:29.876172+09:00,raspberry_pi_01,True,0.95,"{""acceleration"": {""x"": 15.2, ""y"": -8.1, ""z"": 22.3}, ""gyroscope"": {""x"": 45.6, ""y"": -12.8, ""z"": 33.1}, ""timestamp"": ""2025-05-26T16:33:29.876172+09:00""}"
+2025-05-26T16:57:09.643068+09:00,raspberry_pi_01,True,0.95,"{""acceleration"": {""x"": 15.2, ""y"": -8.1, ""z"": 22.3}, ""gyroscope"": {""x"": 45.6, ""y"": -12.8, ""z"": 33.1}, ""timestamp"": ""2025-05-26T16:57:09.643068+09:00""}"

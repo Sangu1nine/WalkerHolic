@@ -1,0 +1,74 @@
+=============================================================================
+환경변수 설정 가이드 - 낙상 감지 시스템 문제 해결
+=============================================================================
+
+문제: 라즈베리파이에서 낙상 데이터가 fall_data 테이블에 저장되지 않음
+원인: 서버가 목업 모드로 실행되어 실제 데이터베이스에 연결되지 않음
+
+해결방법:
+1. gait-analysis-app/backend/ 디렉토리에 .env 파일 생성
+2. 아래 내용을 .env 파일에 추가:
+
+=============================================================================
+.env 파일 내용:
+=============================================================================
+
+# Supabase 설정 (필수)
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_ANON_KEY=your_supabase_anon_key_here
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
+
+# OpenAI 설정 (AI 분석용)
+OPENAI_API_KEY=your_openai_api_key_here
+
+# 서버 설정
+LANGSERVE_PORT=8000
+LANGSERVE_HOST=localhost
+
+# AWS 설정 (선택사항)
+AWS_ACCESS_KEY_ID=your_aws_access_key_here
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key_here
+AWS_REGION=us-east-1
+
+# LangSmith 설정 (선택사항)
+LANGCHAIN_TRACING_V2=true
+LANGCHAIN_ENDPOINT=https://api.smith.langchain.com
+LANGCHAIN_API_KEY=your_langchain_api_key_here
+LANGCHAIN_PROJECT=gait-analysis
+
+=============================================================================
+Supabase 키 찾는 방법:
+=============================================================================
+
+1. https://supabase.com 로그인
+2. 프로젝트 선택
+3. Settings > API 메뉴로 이동
+4. Project URL과 anon public key 복사
+5. Service Role key도 복사 (관리자 권한용)
+
+=============================================================================
+설정 후 확인 방법:
+=============================================================================
+
+1. 백엔드 서버 재시작:
+   cd gait-analysis-app/backend
+   python main.py
+
+2. 로그에서 다음 메시지 확인:
+   ✅ "Supabase 클라이언트 초기화 성공"
+   ❌ "목업 데이터를 사용합니다" (이 메시지가 나오면 환경변수 설정 실패)
+
+3. 테스트 실행:
+   python tools/test_fall_detection.py
+
+=============================================================================
+추가 디버깅:
+=============================================================================
+
+환경변수가 제대로 로드되는지 확인하려면 main.py에 다음 코드 추가:
+
+import os
+print(f"SUPABASE_URL: {os.getenv('SUPABASE_URL')}")
+print(f"SUPABASE_ANON_KEY: {os.getenv('SUPABASE_ANON_KEY')}")
+
+============================================================================= 

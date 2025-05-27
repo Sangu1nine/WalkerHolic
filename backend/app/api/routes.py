@@ -1,0 +1,413 @@
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi.responses import JSONResponse
+from typing import List, Dict, Any
+from models.schemas import IMUData, AnalysisResult, ChatMessage, UserHealthInfo
+from database.supabase_client import supabase_client
+from agents.gait_agent import gait_agent
+from config.settings import settings
+from datetime import datetime
+import logging
+import json
+from app.core.websocket_manager import websocket_manager
+
+logger = logging.getLogger(__name__)
+router = APIRouter()
+
+# WebSocket 엔드포인트 정의
+@router.websocket("/ws/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: str):
+    """WebSocket 연결 엔드포인트 - 개선된 오류 처리"""
+    await websocket_manager.connect(websocket, user_id)
+    logger.info(f"🔌 사용자 {user_id} WebSocket 연결 성공")
+    
+    try:
+        # 연결 성공 메시지 전송
+        await websocket.send_json({
+            "type": "connection_established",
+            "message": f"사용자 {user_id} 연결 성공",
+            "timestamp": datetime.now().isoformat()
+        })
+        
+        while True:
+            try:
+                # 타임아웃 설정으로 무한 대기 방지
+                data = await websocket.receive_text()
+                
+                # 핑/퐁 메시지 처리
+                if data.strip() == "ping":
+                    await websocket.send_text("pong")
+                    continue
+                
+                # 종료 메시지 처리
+                if data.strip() == "disconnect":
+                    logger.info(f"사용자 {user_id}가 정상적으로 연결 종료 요청")
+                    await websocket.send_json({
+                        "type": "disconnect_ack",
+                        "message": "연결이 정상적으로 종료됩니다."
+                    })
+                    break
+                
+                # 새로운 데이터 핸들러 사용 (TIMESTAMPTZ + Asia/Seoul 지원)
+                await websocket_manager.handle_received_data(data, user_id)
+                
+            except Exception as e:
+                if "no close frame received or sent" in str(e):
+                    logger.warning(f"사용자 {user_id} WebSocket 연결이 비정상적으로 종료됨")
+                    break
+                elif "Connection closed" in str(e):
+                    logger.info(f"사용자 {user_id} WebSocket 연결이 클라이언트에 의해 종료됨")
+                    break
+                else:
+                    logger.error(f"사용자 {user_id} WebSocket 데이터 처리 중 오류: {e}")
+                    # 오류 메시지를 클라이언트에 전송 (가능한 경우)
+                    try:
+                        await websocket.send_json({
+                            "type": "error",
+                            "message": f"데이터 처리 중 오류가 발생했습니다: {str(e)[:100]}",
+                            "timestamp": datetime.now().isoformat()
+                        })
+                    except:
+                        break
+            
+    except WebSocketDisconnect:
+        logger.info(f"🔌 사용자 {user_id} WebSocket 정상 연결 해제")
+    except Exception as e:
+        logger.error(f"❌ 사용자 {user_id} WebSocket 연결 중 예상치 못한 오류: {e}")
+    finally:
+        # 연결 정리
+        websocket_manager.disconnect(user_id)
+        logger.info(f"🧹 사용자 {user_id} WebSocket 연결 정리 완료")
+
+@router.post("/api/imu-data")
+async def receive_imu_data(data: IMUData):
+    """IMU 센서 데이터 수신"""
+    try:
+        result = await supabase_client.save_imu_data(data.dict())
+        return {"status": "success", "data": result}
+    except Exception as e:
+        logger.error(f"IMU 데이터 저장 실패: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/api/embedding-data")
+async def receive_embedding_data(user_id: str, embedding_data: List[float]):
+    """임베딩 데이터 수신 및 분석 트리거"""
+    try:
+        # 임베딩 데이터 저장
+        embedding_record = {
+            "user_id": user_id,
+            "timestamp": datetime.now().isoformat(),
+            "embedding_vector": embedding_data,
+            "original_data_id": "temp_id"
+        }
+        await supabase_client.save_embedding_data(embedding_record)
+        
+        # 보행 분석 실행
+        analysis_result = await gait_agent.process_gait_data(user_id, embedding_data)
+        
+        # 분석 결과 저장
+        if analysis_result["analysis_result"] and "error" not in analysis_result["analysis_result"]:
+            result_record = {
+                "user_id": user_id,
+                "analysis_timestamp": datetime.now().isoformat(),
+                **analysis_result["analysis_result"]
+            }
+            await supabase_client.save_analysis_result(result_record)
+        
+        # WebSocket으로 결과 전송
+        await websocket_manager.send_json(analysis_result, user_id)
+        
+        return {"status": "success", "analysis": analysis_result}
+    except Exception as e:
+        logger.error(f"임베딩 데이터 처리 실패: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/api/user/{user_id}/health-info")
+async def get_user_health_info(user_id: str):
+    """사용자 건강정보 조회"""
+    try:
+        health_info = await supabase_client.get_user_health_info(user_id)
+        return {"status": "success", "data": health_info}
+    except Exception as e:
+        logger.error(f"건강정보 조회 실패: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# MODIFIED [2025-01-27]: 새로운 API 엔드포인트 추가 - 대시보드, 알림, 피드백
+@router.get("/api/user/{user_id}/dashboard")
+async def get_user_dashboard(user_id: str):
+    """사용자 대시보드 데이터 조회"""
+    try:
+        dashboard_data = await supabase_client.get_user_dashboard_data(user_id)
+        return {"status": "success", "data": dashboard_data}
+    except Exception as e:
+        logger.error(f"대시보드 데이터 조회 실패: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/api/user/{user_id}/notifications")
+async def get_user_notifications(user_id: str, unread_only: bool = False):
+    """사용자 알림 조회"""
+    try:
+        notifications = await supabase_client.get_notifications(user_id, unread_only)
+        return {"status": "success", "data": notifications}
+    except Exception as e:
+        logger.error(f"알림 조회 실패: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/api/notifications/{notification_id}/read")
+async def mark_notification_read(notification_id: str):
+    """알림 읽음 처리"""
+    try:
+        result = await supabase_client.mark_notification_read(notification_id)
+        return {"status": "success", "data": result}
+    except Exception as e:
+        logger.error(f"알림 읽음 처리 실패: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/api/feedback")
+async def submit_feedback(feedback: Dict[str, Any]):
+    """사용자 피드백 제출"""
+    try:
+        result = await supabase_client.save_user_feedback(feedback)
+        return {"status": "success", "data": result}
+    except Exception as e:
+        logger.error(f"피드백 제출 실패: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/api/analysis/{analysis_id}/details")
+async def get_analysis_details(analysis_id: str):
+    """분석 결과 상세 정보 조회"""
+    try:
+        details = await supabase_client.get_analysis_details(analysis_id)
+        return {"status": "success", "data": details}
+    except Exception as e:
+        logger.error(f"분석 상세 정보 조회 실패: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/api/user/{user_id}/analysis-history")
+async def get_analysis_history(user_id: str, limit: int = 10):
+    """분석 결과 히스토리 조회 (개선됨)"""
+    try:
+        # 실제 Supabase에서 조회하도록 개선
+        history = await supabase_client.get_analysis_history(user_id, limit)
+        if not history:
+            # 목업 데이터 반환
+            history = [
+                {
+                    "id": "mock_1",
+                    "timestamp": "2025-01-27T10:30:00",
+                    "gait_pattern": "정상보행",
+                    "similarity_score": 0.85,
+                    "health_assessment": "낮음",
+                    "confidence_level": 0.92
+                },
+                {
+                    "id": "mock_2",
+                    "timestamp": "2025-01-27T09:15:00",
+                    "gait_pattern": "정상보행",
+                    "similarity_score": 0.82,
+                    "health_assessment": "낮음",
+                    "confidence_level": 0.88
+                }
+            ]
+        return {"status": "success", "data": history}
+    except Exception as e:
+        logger.error(f"분석 히스토리 조회 실패: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/api/chat")
+async def chat_endpoint(message: ChatMessage):
+    """챗봇 대화 처리"""
+    try:
+        # OpenAI API 키 확인
+        if not settings.OPENAI_API_KEY:
+            return {
+                "status": "error",
+                "response": "OpenAI API 키가 설정되지 않았습니다. 백엔드 서버의 .env 파일에 API 키를 설정해주세요.",
+                "timestamp": datetime.now().isoformat()
+            }
+        
+        response = ""
+        current_timestamp = datetime.now().isoformat()
+        
+        # OpenAI를 사용한 챗봇 응답 생성
+        try:
+            from langchain_openai import ChatOpenAI
+            from langchain.schema import HumanMessage, AIMessage
+            
+            logger.info(f"ChatOpenAI 모델 초기화: model=gpt-4o, temperature=0.7")
+            chat_model = ChatOpenAI(
+                model="gpt-4o",
+                api_key=settings.OPENAI_API_KEY,
+                temperature=0.7
+            )
+            
+            # 이전 대화 가져오기 (최대 10개)
+            try:
+                previous_messages = []
+                try:
+                    # Supabase에서 이전 대화 가져오기 시도
+                    logger.info(f"이전 대화 검색 중: 사용자 ID = {message.user_id}")
+                    chat_history = await supabase_client.get_chat_history(message.user_id, limit=10)
+                    
+                    # 대화 기록이 있으면 메시지로 변환
+                    if chat_history and not isinstance(chat_history, dict):
+                        for chat in chat_history:
+                            if chat.get("is_user", True):
+                                previous_messages.append(HumanMessage(content=chat.get("message", "")))
+                            else:
+                                previous_messages.append(AIMessage(content=chat.get("message", "")))
+                    
+                    logger.info(f"이전 대화 {len(previous_messages)}개 검색됨")
+                except Exception as history_error:
+                    logger.warning(f"이전 대화 검색 실패: {history_error}")
+                
+                # 현재 메시지 추가
+                messages_for_llm = previous_messages + [HumanMessage(content=message.message)]
+                
+                logger.info(f"OpenAI API 호출: 메시지 = '{message.message}', 컨텍스트 길이 = {len(messages_for_llm)}")
+                response_message = chat_model.invoke(messages_for_llm)
+                
+                response = response_message.content
+                logger.info(f"OpenAI API 응답 수신: 길이 = {len(response)}")
+            except Exception as context_error:
+                logger.error(f"대화 컨텍스트 처리 중 오류: {context_error}")
+                # 컨텍스트 없이 단일 메시지로 시도
+                logger.info(f"OpenAI API 호출(컨텍스트 없음): 메시지 = '{message.message}'")
+                response_message = chat_model.invoke([HumanMessage(content=message.message)])
+                response = response_message.content
+        except Exception as openai_error:
+            logger.error(f"OpenAI API 호출 실패: {openai_error}")
+            return {
+                "status": "error",
+                "response": f"OpenAI API 호출 중 오류가 발생했습니다: {str(openai_error)}",
+                "timestamp": current_timestamp
+            }
+        
+        # 사용자 메시지 저장
+        user_message_record = {
+            "user_id": message.user_id,
+            "message": message.message,
+            "is_user": True,
+            "timestamp": message.timestamp or current_timestamp
+        }
+        
+        # AI 응답 저장
+        ai_message_record = {
+            "user_id": message.user_id,
+            "message": response,
+            "is_user": False,
+            "timestamp": current_timestamp
+        }
+        
+        # Supabase 저장 시도
+        try:
+            logger.info(f"Supabase에 사용자 메시지 저장 시도")
+            await supabase_client.save_chat_message(user_message_record)
+            
+            logger.info(f"Supabase에 AI 응답 저장 시도")
+            await supabase_client.save_chat_message(ai_message_record)
+            
+            logger.info(f"Supabase에 채팅 내용 저장 성공")
+        except Exception as db_error:
+            logger.error(f"Supabase에 채팅 내용 저장 실패: {db_error}")
+            # 저장 실패해도 응답은 반환
+        
+        return {
+            "status": "success",
+            "response": response,
+            "timestamp": current_timestamp
+        }
+    except Exception as e:
+        logger.error(f"챗봇 처리 실패: {e}")
+        return {
+            "status": "error",
+            "response": f"죄송합니다. 메시지 처리 중 오류가 발생했습니다: {str(e)}",
+            "timestamp": datetime.now().isoformat()
+        }
+
+@router.post("/api/cognitive-test")
+async def cognitive_test(user_id: str):
+    """인지기능 테스트 실행"""
+    try:
+        # 인지기능 테스트 결과 생성 (실제로는 테스트 로직 구현)
+        import random
+        
+        test_result = {
+            "user_id": user_id,
+            "test_type": "cognitive",
+            "timestamp": datetime.now().isoformat(),
+            "scores": {
+                "memory": random.randint(70, 100),
+                "attention": random.randint(65, 95),
+                "executive_function": random.randint(75, 100),
+                "language": random.randint(80, 100),
+                "visuospatial": random.randint(70, 95)
+            },
+            "overall_score": random.randint(70, 95),
+            "risk_level": "normal",  # normal, mild, moderate, severe
+            "recommendations": [
+                "정기적인 독서와 퍼즐 게임을 권장합니다.",
+                "사회적 활동 참여를 늘려보세요.",
+                "충분한 수면을 취하세요."
+            ]
+        }
+        
+        # 위험도 평가
+        if test_result["overall_score"] >= 85:
+            test_result["risk_level"] = "normal"
+        elif test_result["overall_score"] >= 70:
+            test_result["risk_level"] = "mild"
+        elif test_result["overall_score"] >= 55:
+            test_result["risk_level"] = "moderate"
+        else:
+            test_result["risk_level"] = "severe"
+        
+        # 결과 저장 (실제로는 데이터베이스에 저장)
+        logger.info(f"인지기능 테스트 완료: 사용자 {user_id}, 점수 {test_result['overall_score']}")
+        
+        return {"status": "success", "result": test_result}
+    except Exception as e:
+        logger.error(f"인지기능 테스트 실패: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/api/fall-risk-test")
+async def fall_risk_test(user_id: str):
+    """낙상 위험도 테스트 실행"""
+    try:
+        # 낙상 위험도 테스트 결과 생성 (실제로는 센서 데이터 기반 분석)
+        import random
+        
+        test_result = {
+            "user_id": user_id,
+            "test_type": "fall_risk",
+            "timestamp": datetime.now().isoformat(),
+            "assessments": {
+                "balance": random.randint(60, 100),
+                "gait_stability": random.randint(65, 95),
+                "muscle_strength": random.randint(70, 100),
+                "reaction_time": random.randint(60, 90),
+                "vision": random.randint(75, 100)
+            },
+            "overall_risk_score": random.randint(15, 85),
+            "risk_level": "low",  # low, medium, high
+            "recommendations": [
+                "균형 운동을 정기적으로 실시하세요.",
+                "집안의 장애물을 제거하세요.",
+                "적절한 조명을 유지하세요."
+            ]
+        }
+        
+        # 위험도 평가 (점수가 높을수록 위험)
+        if test_result["overall_risk_score"] <= 30:
+            test_result["risk_level"] = "low"
+        elif test_result["overall_risk_score"] <= 60:
+            test_result["risk_level"] = "medium"
+        else:
+            test_result["risk_level"] = "high"
+        
+        # 결과 저장 (실제로는 데이터베이스에 저장)
+        logger.info(f"낙상 위험도 테스트 완료: 사용자 {user_id}, 위험도 {test_result['risk_level']}")
+        
+        return {"status": "success", "result": test_result}
+    except Exception as e:
+        logger.error(f"낙상 위험도 테스트 실패: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
