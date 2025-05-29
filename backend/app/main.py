@@ -9,10 +9,15 @@ from fastapi import FastAPI, HTTPException
 
 # 로깅 설정
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# 특정 라이브러리의 로그 레벨을 더 높게 설정
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("hpack").setLevel(logging.WARNING)
 
 # LangSmith 환경 설정
 if settings.LANGCHAIN_API_KEY:

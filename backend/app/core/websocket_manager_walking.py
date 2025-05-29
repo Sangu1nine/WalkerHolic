@@ -94,10 +94,8 @@ class ImprovedWebSocketManager:
         self.imu_batch_buffers: Dict[str, List[Dict[str, Any]]] = {}
         self.user_state_trackers: Dict[str, UserStateTracker] = {}
         self.emergency_timers: Dict[str, float] = {}  # 응급상황 타이머
+        self._emergency_monitor_task = None  # 응급상황 모니터링 태스크
         self._create_data_folders()
-        
-        # 주기적 응급상황 체크
-        asyncio.create_task(self._emergency_monitor())
     
     def _create_data_folders(self):
         """데이터 백업용 폴더 생성"""
@@ -119,6 +117,14 @@ class ImprovedWebSocketManager:
         if user_id not in self.user_state_trackers:
             self.user_state_trackers[user_id] = UserStateTracker(user_id)
         
+        # 🔄 MODIFIED [2025-01-27]: 첫 연결 시 응급상황 모니터링 시작
+        if self._emergency_monitor_task is None:
+            try:
+                self._emergency_monitor_task = asyncio.create_task(self._emergency_monitor())
+                logger.info("🚨 응급상황 모니터링 시작됨")
+            except Exception as e:
+                logger.error(f"응급상황 모니터링 시작 실패: {e}")
+        
         logger.info(f"사용자 {user_id} 연결됨")
         
         # 연결 확인 메시지 전송
@@ -138,8 +144,36 @@ class ImprovedWebSocketManager:
                 # 진행 중인 보행 세션 종료
                 asyncio.create_task(self._end_walking_session(user_id))
                 
+                # 🛠️ MODIFIED [2025-01-27]: 버퍼 정리 추가 - 메모리 누수 방지
+                if user_id in self.data_buffers:
+                    del self.data_buffers[user_id]
+                if user_id in self.imu_batch_buffers:
+                    # 남은 배치 데이터 저장 시도
+                    if self.imu_batch_buffers[user_id]:
+                        try:
+                            for data in self.imu_batch_buffers[user_id]:
+                                supabase_client.save_imu_data(data)
+                            logger.info(f"연결 해제 시 남은 IMU 배치 저장 완료 [{user_id}]")
+                        except Exception as e:
+                            logger.error(f"연결 해제 시 IMU 배치 저장 실패 [{user_id}]: {e}")
+                    del self.imu_batch_buffers[user_id]
+                if user_id in self.user_state_trackers:
+                    del self.user_state_trackers[user_id]
+                if user_id in self.emergency_timers:
+                    del self.emergency_timers[user_id]
+                
                 del self.active_connections[user_id]
-                logger.info(f"사용자 {user_id} 연결 해제됨")
+                
+                # 🔄 MODIFIED [2025-01-27]: 모든 연결이 끊어지면 응급상황 모니터링 정리
+                if not self.active_connections and self._emergency_monitor_task:
+                    try:
+                        self._emergency_monitor_task.cancel()
+                        self._emergency_monitor_task = None
+                        logger.info("🚨 모든 연결 해제 - 응급상황 모니터링 중지")
+                    except Exception as e:
+                        logger.error(f"응급상황 모니터링 중지 실패: {e}")
+                
+                logger.info(f"사용자 {user_id} 연결 해제됨 (모든 버퍼 정리 완료)")
             except Exception as e:
                 logger.warning(f"연결 해제 중 오류: {e}")
     

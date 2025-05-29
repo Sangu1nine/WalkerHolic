@@ -3,6 +3,7 @@ Supabase 데이터베이스 클라이언트
 - 보행 분석 애플리케이션의 모든 데이터베이스 작업 담당
 - Mock 모드 지원으로 개발/테스트 환경에서 안정적 동작
 - 포괄적인 에러 처리와 로깅 시스템
+- 새로운 테이블 지원: user_states, emergency_events, walking_sessions
 """
 
 from supabase import create_client, Client
@@ -178,6 +179,21 @@ class MockDataProvider:
             "user_rating": 4,
             "user_comment": "분석 결과가 정확합니다."
         }
+    
+    @staticmethod
+    def get_mock_state_id() -> str:
+        """Mock 상태 ID 반환"""
+        return "mock_state_" + datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    @staticmethod
+    def get_mock_emergency_id() -> str:
+        """Mock 응급상황 ID 반환"""
+        return "mock_emergency_" + datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    @staticmethod
+    def get_mock_session_id() -> str:
+        """Mock 세션 ID 반환"""
+        return "mock_session_" + datetime.now().strftime("%Y%m%d_%H%M%S")
 
 class SupabaseClient:
     """Supabase 데이터베이스 클라이언트"""
@@ -359,6 +375,52 @@ class SupabaseClient:
         return self._execute_with_fallback(
             "모델 성능 로그 저장",
             lambda: self.client.table("model_performance_logs").insert(performance_data).execute(),
+            fallback_data={"status": "success"}
+        )
+    
+    # 🆕 새로운 테이블 메서드들 (워킹 모드 지원)
+    def save_user_state(self, state_data: Dict[str, Any]) -> Union[DatabaseResult, MockResult]:
+        """사용자 상태 저장"""
+        return self._execute_with_fallback(
+            f"사용자 상태 저장 - {state_data.get('user_id', 'unknown')}",
+            lambda: self.client.table("user_states").insert(state_data).execute(),
+            fallback_data={"id": MockDataProvider.get_mock_state_id(), **state_data}
+        )
+    
+    def save_emergency_event(self, emergency_data: Dict[str, Any]) -> Union[DatabaseResult, MockResult]:
+        """응급상황 이벤트 저장"""
+        result = self._execute_with_fallback(
+            f"응급상황 저장 - {emergency_data.get('user_id', 'unknown')}",
+            lambda: self.client.table("emergency_events").insert(emergency_data).execute(),
+            fallback_data={"id": MockDataProvider.get_mock_emergency_id(), **emergency_data}
+        )
+        
+        if not result.get("mock"):
+            logger.warning(f"🚨 응급상황 실제 DB 저장 완료: {emergency_data.get('user_id')}")
+        
+        return result
+    
+    def save_walking_session(self, session_data: Dict[str, Any]) -> str:
+        """보행 세션 시작 저장"""
+        result = self._execute_with_fallback(
+            f"보행 세션 저장 - {session_data.get('user_id', 'unknown')}",
+            lambda: self.client.table("walking_sessions").insert(session_data).execute(),
+            fallback_data={"id": MockDataProvider.get_mock_session_id(), **session_data}
+        )
+        
+        if result.get("data"):
+            if isinstance(result["data"], list) and len(result["data"]) > 0:
+                return result["data"][0]["id"]
+            elif isinstance(result["data"], dict):
+                return result["data"]["id"]
+        
+        return MockDataProvider.get_mock_session_id()
+    
+    def update_walking_session(self, session_id: str, update_data: Dict[str, Any]) -> Union[DatabaseResult, MockResult]:
+        """보행 세션 업데이트"""
+        return self._execute_with_fallback(
+            f"보행 세션 업데이트 - {session_id}",
+            lambda: self.client.table("walking_sessions").update(update_data).eq("id", session_id).execute(),
             fallback_data={"status": "success"}
         )
     
