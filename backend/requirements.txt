@@ -19,3 +19,6 @@ pyttsx3==2.90
 SQLAlchemy>=2.0.0,<3.0.0
 requests>=2.32.0,<3.0.0
 scipy>=1.15.0,<2.0.0
+# PyAudio==0.2.14  # Windows: pip install PyAudio-0.2.14-cp311-cp311-win_amd64.whl
+#                  # Linux: sudo apt-get install portaudio19-dev python3-pyaudio
+#                  # macOS: brew install portaudio

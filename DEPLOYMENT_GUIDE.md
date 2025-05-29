@@ -27,6 +27,11 @@
 
 ## 💻 로컬 배포
 
+### 시스템 요구사항
+- **Python**: 3.11 이상
+- **Node.js**: 18.x 이상
+- **운영체제**: Windows 10/11, macOS, Linux
+
 ### 1. 빠른 설치
 ```bash
 # 저장소 클론
@@ -42,13 +47,41 @@ chmod +x setup.sh
 ```
 
 ### 2. 수동 설치
+
+#### Windows 환경
+```bash
+# 백엔드 설정
+cd backend
+python -m venv venv
+venv\Scripts\activate
+
+# PyAudio 설치 (Windows 전용)
+pip install PyAudio-0.2.14-cp311-cp311-win_amd64.whl
+
+# 나머지 패키지 설치
+pip install -r requirements.txt
+```
+
+> **📝 참고**: Windows용 PyAudio wheel 파일(`PyAudio-0.2.14-cp311-cp311-win_amd64.whl`)은 backend 폴더에 포함되어 있습니다. 이 파일은 Python 3.11 64비트 Windows 환경용입니다. 다른 Python 버전을 사용하는 경우 [여기](https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio)에서 해당 버전의 wheel 파일을 다운로드하세요.
+
+#### Linux/macOS 환경
 ```bash
 # 백엔드 설정
 cd backend
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
 
+# PyAudio 의존성 설치 (Linux)
+sudo apt-get install portaudio19-dev python3-pyaudio  # Ubuntu/Debian
+# 또는
+brew install portaudio  # macOS
+
+# 패키지 설치
+pip install -r requirements.txt
+```
+
+#### 프론트엔드 설정
+```bash
 # 프론트엔드 설정
 cd ../frontend
 npm install
@@ -84,6 +117,9 @@ sudo apt update && sudo apt upgrade -y
 
 # 필수 패키지 설치
 sudo apt install -y python3 python3-pip python3-venv nodejs npm nginx git
+
+# PyAudio 의존성 설치 (Linux 서버)
+sudo apt-get install portaudio19-dev python3-pyaudio
 
 # Node.js 최신 버전 설치 (선택사항)
 curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
@@ -419,6 +455,35 @@ chown $USER:$USER backend/.env
 ## 🚨 트러블슈팅
 
 ### 일반적인 문제
+
+#### PyAudio 설치 실패
+**Windows 환경:**
+```bash
+# 에러 발생 시
+pip install PyAudio-0.2.14-cp311-cp311-win_amd64.whl
+
+# wheel 파일이 없는 경우
+# 1. backend 폴더에서 wheel 파일 확인
+ls PyAudio-0.2.14-cp311-cp311-win_amd64.whl
+
+# 2. 직접 다운로드 (필요시)
+# https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio
+```
+
+**Linux 환경:**
+```bash
+# 의존성 설치 후 재시도
+sudo apt-get update
+sudo apt-get install portaudio19-dev python3-pyaudio
+pip install PyAudio
+```
+
+**macOS 환경:**
+```bash
+# Homebrew로 의존성 설치
+brew install portaudio
+pip install PyAudio
+```
 
 #### 서비스 시작 실패
 ```bash

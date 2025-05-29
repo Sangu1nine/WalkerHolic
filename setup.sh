@@ -49,6 +49,41 @@ source venv/bin/activate
 # Python 의존성 설치
 echo "📥 Python 패키지를 설치합니다..."
 pip install --upgrade pip
+
+# PyAudio 설치 (운영체제별 처리)
+echo "🎵 PyAudio를 설치합니다..."
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
+    # Windows 환경
+    if [ -f "PyAudio-0.2.14-cp311-cp311-win_amd64.whl" ]; then
+        echo "   Windows용 PyAudio wheel 파일을 설치합니다..."
+        pip install PyAudio-0.2.14-cp311-cp311-win_amd64.whl
+    else
+        echo "   ⚠️  PyAudio wheel 파일을 찾을 수 없습니다."
+        echo "   backend 폴더에 PyAudio-0.2.14-cp311-cp311-win_amd64.whl 파일이 있는지 확인하세요."
+    fi
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    # Linux 환경
+    echo "   Linux용 PyAudio 의존성을 설치합니다..."
+    if command -v apt-get &> /dev/null; then
+        sudo apt-get update
+        sudo apt-get install -y portaudio19-dev python3-pyaudio
+    elif command -v yum &> /dev/null; then
+        sudo yum install -y portaudio-devel
+    fi
+    pip install PyAudio
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS 환경
+    echo "   macOS용 PyAudio 의존성을 설치합니다..."
+    if command -v brew &> /dev/null; then
+        brew install portaudio
+    else
+        echo "   ⚠️  Homebrew가 설치되지 않았습니다. 수동으로 portaudio를 설치해주세요."
+    fi
+    pip install PyAudio
+else
+    echo "   ⚠️  알 수 없는 운영체제입니다. PyAudio를 수동으로 설치해주세요."
+fi
+
 pip install -r requirements.txt
 
 # .env 파일 생성 (예제)
