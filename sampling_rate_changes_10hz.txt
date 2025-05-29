@@ -1,5 +1,5 @@
 # 10Hz 샘플링 레이트 변경사항 요약
-# MODIFIED 2024-01-XX: 100Hz → 10Hz 샘플링 레이트 변경
+# MODIFIED 2025-05-26: 100Hz → 10Hz 샘플링 레이트 변경
 
 ## 1. 라즈베리파이 코드 변경사항 (Raspberry_with_realtime_transmission_websocket_updated.py)
 
