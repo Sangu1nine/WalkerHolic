@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  walkerholic-app:
+    build: .
+    container_name: walkerholic-server
+    ports:
+      - "8000:8000"
+      - "3000:3000"
+    environment:
+      - ENVIRONMENT=production
+      - HOST=0.0.0.0
+      - PORT=8000
+    env_file:
+      - backend/.env
+    volumes:
+      - ./backend/logs:/app/logs
+      - ./backend/data_backup:/app/data_backup
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # 선택사항: PostgreSQL 데이터베이스 (Supabase 대신 사용 시)
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: walkerholic-db
+  #   environment:
+  #     POSTGRES_DB: walkerholic
+  #     POSTGRES_USER: walkerholic
+  #     POSTGRES_PASSWORD: your_password_here
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #     - ./backend/database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+  #   ports:
+  #     - "5432:5432"
+  #   restart: unless-stopped
+
+  # 선택사항: Redis 캐시
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: walkerholic-redis
+  #   ports:
+  #     - "6379:6379"
+  #   restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    name: walkerholic-network 
