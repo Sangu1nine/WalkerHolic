@@ -1,0 +1,165 @@
+.speech-synthesis {
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.speech-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.speech-toggle-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border: 2px solid #007bff;
+  border-radius: 20px;
+  background-color: #fff;
+  color: #007bff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.speech-toggle-button:hover {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.speech-toggle-button.speaking {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: #fff;
+  animation: pulse 1.5s infinite;
+}
+
+.speech-pause-button {
+  padding: 6px 12px;
+  border: 1px solid #6c757d;
+  border-radius: 4px;
+  background-color: #6c757d;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.speech-pause-button:hover {
+  background-color: #5a6268;
+}
+
+.speech-pause-button.paused {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.speech-settings-button {
+  padding: 6px 12px;
+  border: 1px solid #6c757d;
+  border-radius: 4px;
+  background-color: #fff;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.speech-settings-button:hover {
+  background-color: #6c757d;
+  color: #fff;
+}
+
+.speech-icon {
+  font-size: 16px;
+  margin-right: 5px;
+}
+
+.speech-settings {
+  margin-top: 10px;
+  padding: 15px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background-color: #fff;
+}
+
+.speech-setting {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.speech-setting:last-child {
+  margin-bottom: 0;
+}
+
+.speech-setting label {
+  min-width: 80px;
+  font-weight: 500;
+  color: #495057;
+  margin-right: 10px;
+}
+
+.speech-setting select {
+  flex: 1;
+  padding: 5px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.speech-setting input[type="range"] {
+  flex: 1;
+  margin: 0 10px;
+}
+
+.speech-setting span {
+  min-width: 40px;
+  font-size: 12px;
+  color: #6c757d;
+  text-align: right;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+  }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .speech-controls {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .speech-toggle-button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  
+  .speech-setting {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .speech-setting label {
+    margin-bottom: 5px;
+    margin-right: 0;
+  }
+  
+  .speech-setting select,
+  .speech-setting input[type="range"] {
+    width: 100%;
+    margin: 0;
+  }
+} 

@@ -420,3 +420,299 @@
 .close-result-btn:hover {
   background: #5a6268;
 }
+
+/* 🆕 응급상황 관련 애니메이션 추가 */
+
+@keyframes emergency-flash {
+  0%, 100% {
+    background-color: inherit;
+  }
+  50% {
+    background-color: rgba(255, 0, 0, 0.1);
+  }
+}
+
+/* 응급상황 발생 시 전체 화면 효과 */
+body.emergency-mode {
+  animation: emergency-flash 0.5s ease-in-out 3;
+}
+
+/* 응급상황 관련 분석 결과 스타일 */
+.analysis-item.fall_detection {
+  border-left: 4px solid #f44336;
+  background: linear-gradient(90deg, rgba(244, 67, 54, 0.1), transparent);
+}
+
+.analysis-item.emergency {
+  border-left: 4px solid #d32f2f;
+  background: linear-gradient(90deg, rgba(211, 47, 47, 0.2), transparent);
+  animation: emergency-glow 2s ease-in-out infinite;
+}
+
+@keyframes emergency-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(211, 47, 47, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(211, 47, 47, 0.6);
+  }
+}
+
+/* 기존 연결 상태 스타일 개선 */
+.connection-status.connected {
+  background: linear-gradient(135deg, #4caf50, #388e3c);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  animation: connected-pulse 2s ease-in-out infinite;
+}
+
+.connection-status.disconnected {
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  animation: disconnected-pulse 1s ease-in-out infinite;
+}
+
+@keyframes connected-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes disconnected-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+/* 대시보드 섹션 간격 조정 */
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+/* 사용자 상태 표시 컴포넌트와 대시보드 간격 */
+.dashboard-section {
+  margin-top: 0; /* UserStatusDisplay 다음에 오므로 위쪽 마진 제거 */
+}
+
+/* 반응형 디자인 개선 */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 10px;
+    gap: 15px;
+  }
+  
+  .dashboard-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 접근성 개선 */
+@media (prefers-reduced-motion: reduce) {
+  .emergency-glow,
+  .connected-pulse,
+  .disconnected-pulse,
+  .emergency-flash {
+    animation: none !important;
+  }
+}
+
+/* 🆕 사용자 상태 표시 스타일 */
+.user-status-section {
+  margin-bottom: 30px;
+}
+
+.status-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.status-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+}
+
+.status-card h3 {
+  margin: 0 0 20px 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.status-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  align-items: center;
+}
+
+.status-indicator {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 25px;
+  padding: 12px 20px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-align: center;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+}
+
+.status-indicator.walking {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  border-color: #81C784;
+  animation: walkingPulse 2s ease-in-out infinite;
+}
+
+.status-indicator.daily {
+  background: linear-gradient(135deg, #2196F3, #1976D2);
+  border-color: #64B5F6;
+}
+
+.status-indicator.fall {
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+  border-color: #ef5350;
+  animation: fallAlert 1s ease-in-out infinite alternate;
+}
+
+.status-indicator.unknown {
+  background: linear-gradient(135deg, #9E9E9E, #757575);
+  border-color: #BDBDBD;
+  animation: unknownBlink 3s ease-in-out infinite;
+}
+
+.connection-indicator {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.connection-indicator.connected {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  border-color: #81C784;
+}
+
+.connection-indicator.disconnected {
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+  border-color: #ef5350;
+  animation: disconnectedBlink 2s ease-in-out infinite;
+}
+
+.emergency-status {
+  background: linear-gradient(135deg, #ff1744, #d50000);
+  border-radius: 20px;
+  padding: 10px 18px;
+  font-weight: bold;
+  text-align: center;
+  border: 2px solid #ff5722;
+  animation: emergencyFlash 1s ease-in-out infinite alternate;
+  box-shadow: 0 4px 15px rgba(255, 23, 68, 0.4);
+}
+
+.last-update {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  opacity: 0.8;
+}
+
+/* 상태별 애니메이션 */
+@keyframes walkingPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5);
+  }
+}
+
+@keyframes fallAlert {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 15px rgba(244, 67, 54, 0.5);
+  }
+  100% {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(244, 67, 54, 0.8);
+  }
+}
+
+@keyframes unknownBlink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes disconnectedBlink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes emergencyFlash {
+  0% {
+    background: linear-gradient(135deg, #ff1744, #d50000);
+    transform: scale(1);
+  }
+  100% {
+    background: linear-gradient(135deg, #ff5722, #ff1744);
+    transform: scale(1.03);
+  }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .status-info {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .status-card {
+    padding: 20px;
+  }
+  
+  .status-indicator {
+    padding: 10px 16px;
+    font-size: 1rem;
+  }
+}

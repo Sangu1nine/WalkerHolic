@@ -1,0 +1,428 @@
+/* 사용자 상태 표시 컴포넌트 스타일 */
+
+.user-status-container {
+    background: linear-gradient(135deg, #ffffff, #f8f9fa);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 20px 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.user-status-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+}
+
+.status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.status-title {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.title-icon {
+    font-size: 24px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.connection-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.connection-indicator.connected {
+    background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+    color: #2e7d32;
+    border: 1px solid #81c784;
+}
+
+.connection-indicator.disconnected {
+    background: linear-gradient(135deg, #ffebee, #ffcdd2);
+    color: #c62828;
+    border: 1px solid #ef5350;
+}
+
+.indicator-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.connected .indicator-dot {
+    background: #4caf50;
+}
+
+.disconnected .indicator-dot {
+    background: #f44336;
+}
+
+.connection-text {
+    font-weight: 600;
+}
+
+/* 현재 상태 카드 */
+
+.current-state-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.current-state-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, currentColor, transparent);
+    opacity: 0.3;
+}
+
+.state-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.state-icon {
+    font-size: 48px;
+    line-height: 1;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+    animation: gentle-bounce 3s ease-in-out infinite;
+}
+
+.state-info {
+    flex: 1;
+}
+
+.state-name {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.state-duration {
+    font-size: 16px;
+    color: #666;
+    font-weight: 500;
+}
+
+.confidence-score {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f5f5f5;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.confidence-label {
+    font-size: 14px;
+    color: #555;
+    font-weight: 600;
+}
+
+.confidence-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2196f3;
+}
+
+/* 응급상황 타이머 카드 */
+
+.emergency-timer-card {
+    background: linear-gradient(135deg, #fff3e0, #ffecb3);
+    border: 2px solid #ff9800;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    animation: emergency-glow 2s ease-in-out infinite;
+}
+
+.timer-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.timer-icon {
+    font-size: 24px;
+    animation: timer-tick 1s ease-in-out infinite;
+}
+
+.timer-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #e65100;
+}
+
+.timer-content {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.timer-value {
+    font-size: 32px;
+    font-weight: 900;
+    color: #d84315;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    margin-bottom: 4px;
+}
+
+.timer-description {
+    font-size: 14px;
+    color: #bf360c;
+    font-weight: 600;
+}
+
+.timer-progress {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 152, 0, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #ff9800, #f57c00);
+    border-radius: 4px;
+    transition: width 1s ease;
+    animation: progress-pulse 1s ease-in-out infinite;
+}
+
+/* 상태 세부 정보 */
+
+.status-details {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #e0e0e0;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-size: 14px;
+    color: #666;
+    font-weight: 600;
+}
+
+.detail-value {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+}
+
+.detail-value.status-online {
+    color: #4caf50;
+    font-weight: 700;
+}
+
+.detail-value.status-offline {
+    color: #f44336;
+    font-weight: 700;
+}
+
+/* 애니메이션 효과들 */
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.1);
+    }
+}
+
+@keyframes gentle-bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+@keyframes emergency-glow {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(255, 152, 0, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(255, 152, 0, 0.6);
+    }
+}
+
+@keyframes timer-tick {
+    0%, 100% {
+        transform: rotate(0deg);
+    }
+    25% {
+        transform: rotate(5deg);
+    }
+    75% {
+        transform: rotate(-5deg);
+    }
+}
+
+@keyframes progress-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* 반응형 디자인 */
+
+@media (max-width: 768px) {
+    .user-status-container {
+        padding: 16px;
+        margin: 10px 0;
+    }
+    
+    .status-header {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+    
+    .status-title {
+        font-size: 18px;
+    }
+    
+    .current-state-card {
+        padding: 16px;
+    }
+    
+    .state-main {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+    }
+    
+    .state-icon {
+        font-size: 40px;
+    }
+    
+    .state-name {
+        font-size: 20px;
+    }
+    
+    .timer-value {
+        font-size: 24px;
+    }
+    
+    .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-status-container {
+        padding: 12px;
+    }
+    
+    .current-state-card,
+    .emergency-timer-card,
+    .status-details {
+        padding: 12px;
+    }
+    
+    .state-icon {
+        font-size: 36px;
+    }
+    
+    .state-name {
+        font-size: 18px;
+    }
+    
+    .timer-value {
+        font-size: 20px;
+    }
+}
+
+/* 접근성 개선 */
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* 다크 모드 지원 */
+
+@media (prefers-color-scheme: dark) {
+    .user-status-container {
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .status-title {
+        color: #ecf0f1;
+    }
+    
+    .current-state-card,
+    .status-details {
+        background: #34495e;
+        border-color: #4a5568;
+    }
+    
+    .state-duration,
+    .detail-label {
+        color: #a0aec0;
+    }
+    
+    .detail-value {
+        color: #e2e8f0;
+    }
+} 

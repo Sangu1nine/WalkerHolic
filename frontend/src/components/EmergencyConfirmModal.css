@@ -1,0 +1,407 @@
+/* 응급상황 확인 모달 - 챗봇 스타일 */
+.emergency-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: emergencyFadeIn 0.3s ease-out;
+}
+
+.emergency-confirm-modal {
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(220, 38, 38, 0.3);
+  animation: emergencySlideIn 0.4s ease-out;
+  border: 3px solid #dc2626;
+}
+
+/* 챗봇 헤더 */
+.chatbot-header {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  color: white;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.chatbot-avatar {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-right: 15px;
+}
+
+.chatbot-info {
+  flex: 1;
+}
+
+.chatbot-name {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.chatbot-status {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.countdown-display {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 10px 15px;
+  text-align: center;
+  animation: countdownPulse 1s infinite;
+}
+
+.countdown-number {
+  font-size: 24px;
+  font-weight: bold;
+  display: block;
+}
+
+.countdown-label {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* 챗봇 대화 영역 */
+.chatbot-conversation {
+  padding: 20px;
+  background: #f8fafc;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.message {
+  display: flex;
+  margin-bottom: 15px;
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+.message-avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.system-message .message-avatar {
+  background: #fbbf24;
+}
+
+.bot-message .message-avatar {
+  background: #3b82f6;
+}
+
+.message-content {
+  flex: 1;
+  background: white;
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.system-message .message-content {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+}
+
+.bot-message .message-content {
+  background: #dbeafe;
+  border-left: 4px solid #3b82f6;
+}
+
+.message-text {
+  font-size: 15px;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.message-time {
+  font-size: 12px;
+  color: #6b7280;
+  text-align: right;
+}
+
+.message-details {
+  margin-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding-top: 8px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.detail-item span:first-child {
+  color: #6b7280;
+}
+
+.detail-item span:last-child {
+  font-weight: 600;
+  color: #374151;
+}
+
+/* 응답 버튼 */
+.response-buttons {
+  padding: 20px;
+  display: flex;
+  gap: 12px;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+}
+
+.response-btn {
+  flex: 1;
+  padding: 15px 20px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.response-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ok-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.ok-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+}
+
+.not-ok-btn {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  color: white;
+}
+
+.not-ok-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #b91c1c, #991b1b);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.3);
+}
+
+.btn-icon {
+  font-size: 18px;
+}
+
+.btn-text {
+  font-size: 14px;
+}
+
+/* 진행 상태 */
+.progress-section {
+  padding: 20px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #dc2626, #ef4444);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  animation: progressPulse 2s infinite;
+}
+
+.progress-text {
+  text-align: center;
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* 안내 메시지 */
+.emergency-notice {
+  padding: 15px 20px;
+  background: #fffbeb;
+  border-top: 1px solid #fed7aa;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.notice-icon {
+  font-size: 16px;
+  margin-top: 2px;
+}
+
+.notice-text {
+  font-size: 13px;
+  color: #92400e;
+  line-height: 1.4;
+}
+
+/* 애니메이션 */
+@keyframes emergencyFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes emergencySlideIn {
+  from {
+    transform: translateY(-50px) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes messageSlideIn {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes countdownPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes progressPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 600px) {
+  .emergency-confirm-modal {
+    width: 95%;
+    margin: 10px;
+  }
+  
+  .chatbot-header {
+    padding: 15px;
+  }
+  
+  .chatbot-name {
+    font-size: 16px;
+  }
+  
+  .countdown-number {
+    font-size: 20px;
+  }
+  
+  .response-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .response-btn {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+  
+  .btn-text {
+    font-size: 13px;
+  }
+}
+
+/* 다크모드 지원 */
+@media (prefers-color-scheme: dark) {
+  .emergency-confirm-modal {
+    background: #1f2937;
+    color: white;
+  }
+  
+  .chatbot-conversation {
+    background: #374151;
+  }
+  
+  .message-content {
+    background: #4b5563;
+    color: white;
+  }
+  
+  .system-message .message-content {
+    background: #92400e;
+  }
+  
+  .bot-message .message-content {
+    background: #1e40af;
+  }
+  
+  .response-buttons,
+  .progress-section {
+    background: #1f2937;
+    border-color: #4b5563;
+  }
+  
+  .emergency-notice {
+    background: #92400e;
+    border-color: #b45309;
+  }
+  
+  .notice-text {
+    color: #fbbf24;
+  }
+} 

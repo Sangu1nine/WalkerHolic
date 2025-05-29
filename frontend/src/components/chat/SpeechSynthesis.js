@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import './SpeechSynthesis.css';
 
 // 음성 합성 컴포넌트
 const SpeechSynthesis = ({ text, isSpeaking, onSpeakingChange }) => {
@@ -13,53 +14,8 @@ const SpeechSynthesis = ({ text, isSpeaking, onSpeakingChange }) => {
   const utteranceRef = useRef(null);
   const synth = window.speechSynthesis;
 
-  // 사용 가능한 음성 목록 로드
-  useEffect(() => {
-    const loadVoices = () => {
-      const availableVoices = synth.getVoices();
-      setVoices(availableVoices);
-      
-      // 한국어 음성 기본 선택
-      const koreanVoice = availableVoices.find(voice => voice.lang.includes('ko'));
-      if (koreanVoice) {
-        setSelectedVoice(koreanVoice);
-      } else if (availableVoices.length > 0) {
-        setSelectedVoice(availableVoices[0]);
-      }
-    };
-
-    // 브라우저에 따라 다른 방식으로 음성 로드
-    if (synth.onvoiceschanged !== undefined) {
-      synth.onvoiceschanged = loadVoices;
-    } else {
-      loadVoices();
-    }
-    
-    // 컴포넌트 언마운트 시 음성 중지
-    return () => {
-      if (synth) {
-        synth.cancel();
-      }
-    };
-  }, []);
-
-  // 음성 재생 시작/중지
-  useEffect(() => {
-    if (isSpeaking && text && selectedVoice) {
-      startSpeaking(text);
-    } else {
-      stopSpeaking();
-    }
-    
-    return () => {
-      if (synth) {
-        synth.cancel();
-      }
-    };
-  }, [isSpeaking, text, selectedVoice, rate, pitch, volume]);
-
   // 음성 재생 시작
-  const startSpeaking = (text) => {
+  const startSpeaking = useCallback((text) => {
     if (synth.speaking) {
       synth.cancel();
     }
@@ -93,15 +49,56 @@ const SpeechSynthesis = ({ text, isSpeaking, onSpeakingChange }) => {
 
       synth.speak(utteranceRef.current);
     }
-  };
+  }, [synth, selectedVoice, rate, pitch, volume, onSpeakingChange]);
 
   // 음성 재생 중지
-  const stopSpeaking = () => {
+  const stopSpeaking = useCallback(() => {
     if (synth.speaking) {
       synth.cancel();
       setIsPaused(false);
     }
-  };
+  }, [synth]);
+
+  // 음성 목록 로드
+  useEffect(() => {
+    const loadVoices = () => {
+      const availableVoices = synth.getVoices();
+      setVoices(availableVoices);
+      
+      // 한국어 음성 우선 선택
+      const koreanVoice = availableVoices.find(voice => voice.lang.includes('ko'));
+      setSelectedVoice(koreanVoice || availableVoices[0]);
+    };
+
+    // 브라우저에 따라 다른 방식으로 음성 로드
+    if (synth.onvoiceschanged !== undefined) {
+      synth.onvoiceschanged = loadVoices;
+    } else {
+      loadVoices();
+    }
+    
+    // 컴포넌트 언마운트 시 음성 중지
+    return () => {
+      if (synth) {
+        synth.cancel();
+      }
+    };
+  }, [synth]);
+
+  // 음성 재생 시작/중지
+  useEffect(() => {
+    if (isSpeaking && text && selectedVoice) {
+      startSpeaking(text);
+    } else {
+      stopSpeaking();
+    }
+    
+    return () => {
+      if (synth) {
+        synth.cancel();
+      }
+    };
+  }, [isSpeaking, text, selectedVoice, rate, pitch, volume, startSpeaking, stopSpeaking, synth]);
 
   // 음성 재생 일시정지/재개
   const togglePause = () => {

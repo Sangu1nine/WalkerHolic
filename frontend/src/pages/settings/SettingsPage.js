@@ -37,7 +37,7 @@ const SettingsPage = () => {
     }
   });
 
-  const [systemInfo, setSystemInfo] = useState({
+  const [systemInfo] = useState({
     appVersion: '1.2.3',
     serverStatus: 'connected',
     lastUpdate: '2024-01-15 14:30:00',
@@ -451,10 +451,18 @@ const SettingsPage = () => {
         <div className="settings-section">
           <h3>정보</h3>
           <div className="info-links">
-            <a href="#" className="info-link">개인정보 처리방침</a>
-            <a href="#" className="info-link">이용약관</a>
-            <a href="#" className="info-link">오픈소스 라이선스</a>
-            <a href="#" className="info-link">문의하기</a>
+            <button className="info-link" onClick={() => console.log('개인정보 처리방침 열기')}>
+              개인정보 처리방침
+            </button>
+            <button className="info-link" onClick={() => console.log('이용약관 열기')}>
+              이용약관
+            </button>
+            <button className="info-link" onClick={() => console.log('오픈소스 라이선스 열기')}>
+              오픈소스 라이선스
+            </button>
+            <button className="info-link" onClick={() => console.log('문의하기 열기')}>
+              문의하기
+            </button>
           </div>
           <div className="app-info">
             <p>© 2024 보행 분석 시스템. All rights reserved.</p>

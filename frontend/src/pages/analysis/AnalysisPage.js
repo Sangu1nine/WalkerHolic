@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Line, Bar, Radar } from 'react-chartjs-2';
+import { Line, Radar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -33,29 +33,47 @@ const AnalysisPage = () => {
   const [analysisData, setAnalysisData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadAnalysisData();
-  }, [selectedPeriod]);
-
-  const loadAnalysisData = async () => {
+  const loadAnalysisData = useCallback(async () => {
     setLoading(true);
     // 임시 데이터 - 실제로는 API에서 가져옴
     setTimeout(() => {
-      setAnalysisData(generateMockData());
+      setAnalysisData(generateMockData(selectedPeriod));
       setLoading(false);
     }, 1000);
-  };
+  }, [selectedPeriod]);
 
-  const generateMockData = () => {
+  useEffect(() => {
+    loadAnalysisData();
+  }, [loadAnalysisData]);
+
+  const generateMockData = (period = 'week') => {
+    let daysCount;
+    switch (period) {
+      case 'month':
+        daysCount = 30;
+        break;
+      case 'quarter':
+        daysCount = 90;
+        break;
+      default:
+        daysCount = 7;
+    }
+    
     const dates = [];
     const steps = [];
     const cadence = [];
     const strideLength = [];
     
-    for (let i = 6; i >= 0; i--) {
+    for (let i = daysCount - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
-      dates.push(date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }));
+      if (period === 'week') {
+        dates.push(date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }));
+      } else if (period === 'month') {
+        dates.push(date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }));
+      } else {
+        dates.push(date.toLocaleDateString('ko-KR', { month: 'short' }));
+      }
       steps.push(Math.floor(Math.random() * 3000) + 7000);
       cadence.push(Math.floor(Math.random() * 20) + 110);
       strideLength.push((Math.random() * 0.3 + 0.6).toFixed(2));

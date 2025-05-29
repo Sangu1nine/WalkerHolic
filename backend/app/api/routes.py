@@ -603,3 +603,190 @@ async def get_csv_backup_status():
     except Exception as e:
         logger.error(f"CSV 백업 상태 조회 실패: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# 🆕 응급상황 해제 및 사용자 상태 확인 API
+@router.post("/api/walking/emergency/{user_id}/resolve")
+async def resolve_emergency(user_id: str, resolution_data: Dict[str, Any]):
+    """워킹 모드: 응급상황 해제 - 사용자가 괜찮다고 응답했을 때"""
+    try:
+        if not hasattr(websocket_manager, 'emergency_timers'):
+            return {
+                "status": "error",
+                "message": "워킹 모드가 아니거나 응급상황 관리 기능이 없습니다."
+            }
+        
+        # 응급상황 타이머 해제
+        if user_id in websocket_manager.emergency_timers:
+            fall_time = websocket_manager.emergency_timers[user_id]
+            import time
+            duration = time.time() - fall_time
+            
+            # 타이머 제거
+            del websocket_manager.emergency_timers[user_id]
+            
+            # 해제 알림 브로드캐스트
+            resolution_message = {
+                'type': 'emergency_resolved',
+                'data': {
+                    'user_id': user_id,
+                    'message': f"사용자 {user_id}가 괜찮다고 응답했습니다. 응급상황이 해제됩니다.",
+                    'resolution_type': resolution_data.get('resolution_type', 'user_ok'),
+                    'duration_seconds': int(duration),
+                    'resolved_by': 'user_response',
+                    'timestamp': datetime.now().isoformat()
+                }
+            }
+            
+            # 모든 연결된 클라이언트에게 해제 알림
+            await websocket_manager._broadcast_alert(resolution_message)
+            
+            # 응급상황 해제 로그 저장
+            try:
+                if not supabase_client.is_mock and hasattr(supabase_client, 'save_emergency_resolution'):
+                    resolution_log = {
+                        'user_id': user_id,
+                        'fall_time': datetime.fromtimestamp(fall_time),
+                        'resolution_time': datetime.now(),
+                        'duration_seconds': int(duration),
+                        'resolution_type': resolution_data.get('resolution_type', 'user_ok'),
+                        'resolution_details': resolution_data
+                    }
+                    supabase_client.save_emergency_resolution(resolution_log)
+            except Exception as e:
+                logger.warning(f"응급상황 해제 로그 저장 실패: {e}")
+            
+            logger.info(f"✅ 응급상황 해제됨 [{user_id}] - 사용자 응답, 지속시간: {duration:.1f}초")
+            
+            return {
+                "status": "success", 
+                "message": "응급상황이 성공적으로 해제되었습니다.",
+                "data": {
+                    "user_id": user_id,
+                    "duration_seconds": int(duration),
+                    "resolution_type": resolution_data.get('resolution_type', 'user_ok')
+                }
+            }
+        else:
+            return {
+                "status": "warning",
+                "message": "해당 사용자에 대한 활성 응급상황이 없습니다.",
+                "data": {"user_id": user_id}
+            }
+            
+    except Exception as e:
+        logger.error(f"응급상황 해제 실패 [{user_id}]: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/api/walking/emergency/{user_id}/confirm-help-needed")
+async def confirm_help_needed(user_id: str, help_data: Dict[str, Any]):
+    """워킹 모드: 도움이 필요하다고 응답했을 때 - 즉시 응급처리"""
+    try:
+        if not hasattr(websocket_manager, 'emergency_timers'):
+            return {
+                "status": "error",
+                "message": "워킹 모드가 아니거나 응급상황 관리 기능이 없습니다."
+            }
+        
+        # 즉시 응급상황 처리
+        if user_id in websocket_manager.emergency_timers:
+            fall_time = websocket_manager.emergency_timers[user_id]
+            import time
+            duration = time.time() - fall_time
+        else:
+            # 응급상황 타이머가 없어도 즉시 응급상황 생성
+            fall_time = time.time() - 1  # 1초 전으로 설정
+            duration = 1
+        
+        # 즉시 응급상황 알림 브로드캐스트
+        emergency_message = {
+            'type': 'emergency_confirmed_critical',
+            'data': {
+                'user_id': user_id,
+                'message': f"🚨 긴급! 사용자 {user_id}가 도움이 필요하다고 응답했습니다!",
+                'confirmation_type': help_data.get('help_type', 'general_help'),
+                'duration_seconds': int(duration),
+                'emergency_level': 'CRITICAL',
+                'confirmed_by': 'user_response',
+                'timestamp': datetime.now().isoformat()
+            }
+        }
+        
+        # 모든 연결된 클라이언트에게 긴급 알림
+        await websocket_manager._broadcast_alert(emergency_message)
+        
+        # 응급상황 확정 로그 저장
+        try:
+            if not supabase_client.is_mock and hasattr(supabase_client, 'save_emergency_event'):
+                emergency_data = {
+                    'user_id': user_id,
+                    'emergency_type': 'user_confirmed_help_needed',
+                    'start_time': datetime.fromtimestamp(fall_time),
+                    'confirmed_time': datetime.now(),
+                    'duration_seconds': int(duration),
+                    'emergency_details': help_data
+                }
+                supabase_client.save_emergency_event(emergency_data)
+        except Exception as e:
+            logger.warning(f"응급상황 확정 로그 저장 실패: {e}")
+        
+        logger.critical(f"🚨 응급상황 확정! [{user_id}] - 사용자가 도움 요청")
+        
+        return {
+            "status": "success", 
+            "message": "응급상황이 확정되었습니다. 즉시 도움을 요청합니다.",
+            "data": {
+                "user_id": user_id,
+                "emergency_level": "CRITICAL",
+                "help_type": help_data.get('help_type', 'general_help'),
+                "auto_call_emergency": True
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"응급상황 확정 실패 [{user_id}]: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/api/walking/user/{user_id}/current-emergency")
+async def get_current_emergency_status(user_id: str):
+    """워킹 모드: 특정 사용자의 현재 응급상황 상태 조회"""
+    try:
+        if not hasattr(websocket_manager, 'emergency_timers'):
+            return {
+                "status": "success",
+                "data": {
+                    "user_id": user_id,
+                    "has_emergency": False,
+                    "message": "워킹 모드가 아니거나 응급상황 관리 기능이 없습니다."
+                }
+            }
+        
+        if user_id in websocket_manager.emergency_timers:
+            fall_time = websocket_manager.emergency_timers[user_id]
+            import time
+            duration = time.time() - fall_time
+            
+            return {
+                "status": "success",
+                "data": {
+                    "user_id": user_id,
+                    "has_emergency": True,
+                    "fall_time": fall_time,
+                    "duration_seconds": duration,
+                    "emergency_level": "CRITICAL" if duration >= 15 else "MONITORING",
+                    "time_until_critical": max(0, 15 - duration),
+                    "message": f"낙상 후 {duration:.1f}초 경과"
+                }
+            }
+        else:
+            return {
+                "status": "success",
+                "data": {
+                    "user_id": user_id,
+                    "has_emergency": False,
+                    "message": "현재 응급상황이 없습니다."
+                }
+            }
+            
+    except Exception as e:
+        logger.error(f"응급상황 상태 조회 실패 [{user_id}]: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

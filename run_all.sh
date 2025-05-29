@@ -79,6 +79,50 @@ if [ "$WALKING_MODE" = true ]; then
     echo "🌐 서버 주소: http://localhost:8000"
     echo "🔌 WebSocket: ws://localhost:8000/ws/{user_id}"
     echo ""
+else
+    # 일반 모드 파일들 존재 확인
+    echo "🔍 일반 모드 파일들을 확인합니다..."
+    
+    if [ ! -f "app/core/websocket_manager.py" ]; then
+        echo "❌ app/core/websocket_manager.py 파일을 찾을 수 없습니다."
+        exit 1
+    else
+        echo "✅ websocket_manager.py 확인됨"
+    fi
+    
+    if [ ! -f "database/supabase_client.py" ]; then
+        echo "❌ database/supabase_client.py 파일을 찾을 수 없습니다."
+        exit 1
+    else
+        echo "✅ supabase_client.py 확인됨"
+    fi
+    
+    # 환경변수 설정 확인
+    echo "🔧 환경변수를 확인합니다..."
+    source .env 2>/dev/null || true
+    
+    if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+        echo "⚠️ 경고: Supabase 환경변수가 설정되지 않았습니다."
+        echo "   실제 DB 사용을 원한다면 .env 파일에서 SUPABASE_URL과 SUPABASE_ANON_KEY를 설정하세요."
+    fi
+    
+    # 일반 모드 환경변수 설정 (워킹 모드 비활성화)
+    export WALKING_MODE=false
+    export USE_WALKING_WEBSOCKET=false
+    export USE_TEST_SUPABASE=false
+    
+    echo ""
+    echo "🚀 WALKERHOLIC 일반 백엔드 서버를 시작합니다..."
+    echo "📊 기능:"
+    echo "   - 보행 분석 및 AI 상담"
+    echo "   - 사용자 관리 및 대시보드"
+    echo "   - RAG 기반 지식 검색"
+    echo "   - WebSocket 실시간 통신"
+    echo "   - 실제 DB 저장 및 관리"
+    echo ""
+    echo "🌐 서버 주소: http://localhost:8000"
+    echo "🔌 WebSocket: ws://localhost:8000/ws/{user_id}"
+    echo ""
 fi
 
 chmod +x run.sh

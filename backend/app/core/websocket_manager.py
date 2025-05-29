@@ -195,12 +195,19 @@ class WebSocketManager:
                 logger.warning(f"연결 해제 중 오류: {e}")
     
     async def handle_received_data(self, data: str, user_id: str):
-        """수신된 데이터 통합 처리"""
+        """수신된 데이터 통합 처리 - 연결 상태 확인 포함"""
         try:
             parsed_data = json.loads(data)
             data_type = parsed_data.get('type', 'unknown')
             
-            if data_type == 'imu_data':
+            # 🔧 MODIFIED: 연결 상태 확인 메시지 처리
+            if data_type == 'connection_health_check':
+                await self._handle_health_check(user_id, parsed_data)
+                return
+            elif data_type == 'heartbeat':
+                await self._handle_heartbeat(user_id, parsed_data)
+                return
+            elif data_type == 'imu_data':
                 await self._process_imu_data(parsed_data['data'], user_id, parsed_data.get('state_info'))
             elif data_type == 'fall_detection':
                 await self._process_fall_data(parsed_data['data'], user_id, parsed_data.get('state_info'))
@@ -212,6 +219,37 @@ class WebSocketManager:
             logger.error(f"JSON 파싱 실패 [{user_id}]: {e}")
         except Exception as e:
             logger.error(f"데이터 처리 실패 [{user_id}]: {e}")
+    
+    async def _handle_health_check(self, user_id: str, health_data: dict):
+        """연결 상태 확인 메시지 처리"""
+        logger.info(f"💓 연결 상태 확인 수신 [{user_id}]")
+        
+        # 응답 전송
+        response = {
+            'type': 'health_check_response',
+            'status': 'healthy',
+            'server_time': datetime.datetime.now(
+                datetime.timezone(datetime.timedelta(hours=9))
+            ).isoformat(),
+            'user_id': user_id
+        }
+        
+        await self._safe_send(response, user_id)
+    
+    async def _handle_heartbeat(self, user_id: str, heartbeat_data: dict):
+        """하트비트 메시지 처리"""
+        logger.debug(f"💓 하트비트 수신 [{user_id}]")
+        
+        # 간단한 응답 전송 (선택적)
+        response = {
+            'type': 'heartbeat_ack',
+            'status': 'alive',
+            'server_time': datetime.datetime.now(
+                datetime.timezone(datetime.timedelta(hours=9))
+            ).isoformat()
+        }
+        
+        await self._safe_send(response, user_id)
     
     async def _process_imu_data(self, imu_data: dict, user_id: str, state_info: dict = None):
         """IMU 데이터 처리 - 워킹 모드에서 보행 세션 관리 포함"""
@@ -263,12 +301,28 @@ class WebSocketManager:
             'sampling_rate': IMU_SAMPLING_RATE
         }
         
-        # 워킹 모드에서 상태 정보 추가
+        # 🆕 사용자 상태 정보 추가 (모든 모드에서)
         if self.is_walking_mode and user_id in self.user_state_trackers:
+            # 워킹 모드: 상세한 상태 정보
             tracker = self.user_state_trackers[user_id]
             response_data['user_state'] = {
                 'current_state': tracker.current_state.value,
-                'state_duration': tracker.get_state_duration()
+                'state_duration': tracker.get_state_duration(),
+                'is_connected': True,
+                'last_update': datetime.datetime.now(
+                    datetime.timezone(datetime.timedelta(hours=9))
+                ).isoformat()
+            }
+        else:
+            # 일반 모드: 기본 상태 정보
+            response_data['user_state'] = {
+                'current_state': 'daily',
+                'state_duration': 0,
+                'is_connected': True,
+                'last_update': datetime.datetime.now(
+                    datetime.timezone(datetime.timedelta(hours=9))
+                ).isoformat(),
+                'mode': 'normal'
             }
         
         await self._safe_send(response_data, user_id)
@@ -300,8 +354,13 @@ class WebSocketManager:
         # 데이터베이스 저장
         try:
             if not supabase_client.is_mock:
-                fall_id = supabase_client.save_fall_data(fall_data)
-                logger.info(f"낙상 데이터 DB 저장 완료 [{user_id}] ID: {fall_id}")
+                result = supabase_client.save_fall_data(fall_data)
+                
+                # 결과 로깅 (IMU 데이터와 동일한 방식)
+                if result.get("mock"):
+                    logger.warning(f"Supabase Mock 모드 - CSV만 저장됨 [{user_id}]")
+                else:
+                    logger.info(f"낙상 데이터 DB 저장 완료 [{user_id}]")
                 
                 # 🆕 워킹 모드에서 응급상황 타이머 시작 (15초)
                 if self.is_walking_mode:
@@ -423,8 +482,13 @@ class WebSocketManager:
                                     'start_time': datetime.datetime.fromtimestamp(fall_time),
                                     'duration_seconds': int(duration)
                                 }
-                                emergency_id = supabase_client.save_emergency_event(emergency_data)
-                                logger.warning(f"🚨 응급상황 판정! [{user_id}] ID: {emergency_id}")
+                                result = supabase_client.save_emergency_event(emergency_data)
+                                
+                                # 결과 로깅
+                                if result.get("mock"):
+                                    logger.warning(f"🚨 응급상황 Mock 모드로 저장됨 [{user_id}]")
+                                else:
+                                    logger.warning(f"🚨 응급상황 판정! [{user_id}] 실제 DB 저장 완료")
                         except Exception as e:
                             logger.error(f"응급상황 DB 저장 실패 [{user_id}]: {e}")
                         

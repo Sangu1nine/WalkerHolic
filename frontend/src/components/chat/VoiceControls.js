@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import './VoiceControls.css';
 
 const VoiceControls = ({ onVoiceMessage, isLoading }) => {
   const [isListening, setIsListening] = useState(false);
@@ -70,8 +71,7 @@ const VoiceControls = ({ onVoiceMessage, isLoading }) => {
         // 텍스트가 인식되면 제출 버튼 표시
         if (transcriptValue.trim() !== '') {
           setShowSubmitButton(true);
-          // 비활성 타이머 재설정
-          resetInactivityTimer();
+          // 비활성 타이머 재설정은 별도 useEffect에서 처리
         }
       };
       
@@ -113,9 +113,38 @@ const VoiceControls = ({ onVoiceMessage, isLoading }) => {
         clearTimeout(inactivityTimerRef.current);
       }
     };
-  }, [onVoiceMessage, isListening]);
+  }, [isListening, transcript]);
 
-  const resetInactivityTimer = () => {
+  // submitTranscript 함수를 먼저 정의
+  const submitTranscript = useCallback(() => {
+    if (transcript.trim() !== '') {
+      console.log('음성 메시지 제출:', transcript);
+      onVoiceMessage(transcript);
+      setTranscript('');
+      setShowSubmitButton(false);
+      if (recognition) {
+        try {
+          recognition.stop();
+          console.log('음성 인식 중지됨');
+        } catch (error) {
+          console.error('음성 인식 중지 오류:', error);
+        }
+        
+        setIsListening(false);
+        stopAudioAnalysis();
+        
+        // 타이머 초기화
+        if (inactivityTimerRef.current) {
+          clearTimeout(inactivityTimerRef.current);
+          inactivityTimerRef.current = null;
+        }
+      }
+    } else {
+      console.log('제출할 텍스트가 없음');
+    }
+  }, [transcript, onVoiceMessage, recognition]);
+
+  const resetInactivityTimerWithSubmit = useCallback(() => {
     // 기존 타이머 제거
     if (inactivityTimerRef.current) {
       clearTimeout(inactivityTimerRef.current);
@@ -130,7 +159,7 @@ const VoiceControls = ({ onVoiceMessage, isLoading }) => {
         }
       }, 3000);
     }
-  };
+  }, [isListening, transcript, submitTranscript]);
 
   const startAudioAnalysis = async () => {
     try {
@@ -269,7 +298,7 @@ const VoiceControls = ({ onVoiceMessage, isLoading }) => {
     }
   };
 
-  const stopListening = () => {
+  const stopListening = useCallback(() => {
     if (recognition) {
       try {
         recognition.stop();
@@ -287,19 +316,19 @@ const VoiceControls = ({ onVoiceMessage, isLoading }) => {
         inactivityTimerRef.current = null;
       }
     }
-  };
+  }, [recognition]);
 
-  const submitTranscript = () => {
-    if (transcript.trim() !== '') {
-      console.log('음성 메시지 제출:', transcript);
-      onVoiceMessage(transcript);
-      setTranscript('');
-      setShowSubmitButton(false);
-      stopListening();
-    } else {
-      console.log('제출할 텍스트가 없음');
+  useEffect(() => {
+    console.log('transcript 변경:', transcript);
+    
+    // 텍스트가 있고 음성 인식이 중지된 경우 제출 버튼 표시
+    if (transcript.trim() !== '' && !isListening) {
+      setShowSubmitButton(true);
     }
-  };
+    
+    // 텍스트가 변경될 때마다 비활성 타이머 재설정
+    resetInactivityTimerWithSubmit();
+  }, [isListening, transcript, resetInactivityTimerWithSubmit]);
 
   return (
     <div className="voice-controls">

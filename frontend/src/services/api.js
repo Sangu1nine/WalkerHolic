@@ -118,6 +118,49 @@ export const apiService = {
       params: { user_id: userId }
     });
     return response.data;
+  },
+
+  // 🆕 응급상황 관련 API 메서드들
+  // 응급상황 해제 (사용자가 괜찮다고 응답)
+  resolveEmergency: async (userId, resolutionData) => {
+    const response = await api.post(`/api/walking/emergency/${userId}/resolve`, resolutionData);
+    return response.data;
+  },
+
+  // 도움 요청 확정 (사용자가 도움이 필요하다고 응답)
+  confirmHelpNeeded: async (userId, helpData) => {
+    const response = await api.post(`/api/walking/emergency/${userId}/confirm-help-needed`, helpData);
+    return response.data;
+  },
+
+  // 현재 응급상황 상태 조회
+  getCurrentEmergencyStatus: async (userId) => {
+    const response = await api.get(`/api/walking/user/${userId}/current-emergency`);
+    return response.data;
+  },
+
+  // 워킹 모드 사용자 상태 조회
+  getWalkingUserStatus: async (userId) => {
+    const response = await api.get(`/api/walking/user/${userId}/status`);
+    return response.data;
+  },
+
+  // 응급상황 모니터링 현황 조회
+  getEmergencyMonitor: async () => {
+    const response = await api.get('/api/walking/emergency-monitor');
+    return response.data;
+  },
+
+  // 연결된 사용자 목록 조회
+  getConnectedUsers: async () => {
+    const response = await api.get('/api/walking/connected-users');
+    return response.data;
+  },
+
+  // 워킹 시스템 정보 조회
+  getWalkingSystemInfo: async () => {
+    const response = await api.get('/api/walking/system-info');
+    return response.data;
   }
 };
 
