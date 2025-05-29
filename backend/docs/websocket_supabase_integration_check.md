@@ -58,7 +58,7 @@ handle_imu_data() / handle_event()
 ```json
 {
     "user_id": "raspberry_pi_01",
-    "timestamp": "2024-01-15T10:30:45.123",
+    "timestamp": "2025-05-29T10:30:45.123",
     "acc_x": 1.23,
     "acc_y": 2.34,
     "acc_z": 9.81,
@@ -84,7 +84,7 @@ handle_imu_data() / handle_event()
 ```json
 {
     "user_id": "raspberry_pi_01",
-    "timestamp": "2024-01-15T10:30:45.123",
+    "timestamp": "2025-05-29T10:30:45.123",
     "event_type": "fall_detected",
     "acc_x": 0.85,  // 낙상 확률을 임시로 저장
     "acc_y": 0,
@@ -198,4 +198,10 @@ ws.send(JSON.stringify({
 
 ---
 
-**결론**: 라즈베리파이에서 WebSocket으로 전송되는 데이터가 Supabase fall_data 테이블에 정상적으로 저장되도록 시스템이 구성되었습니다. 하이브리드 저장 방식을 통해 안정성과 접근성을 모두 확보했습니다. 
+**결론**: 라즈베리파이에서 WebSocket으로 전송되는 데이터가 Supabase fall_data 테이블에 정상적으로 저장되도록 시스템이 구성되었습니다. 하이브리드 저장 방식을 통해 안정성과 접근성을 모두 확보했습니다.
+
+---
+
+**작성일**: 2025-05-29  
+**버전**: 1.0  
+**작성자**: AI Assistant 

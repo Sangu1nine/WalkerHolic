@@ -281,6 +281,17 @@ npm run build
 - [프로젝트 구조](docs/project_structure.md) - 상세한 파일 구조 및 설명
 - [API 문서](docs/API_DOCUMENTATION.md) - REST API 및 WebSocket API 가이드
 
+## ⚠️ 줄바꿈(Line Ending) 정책 안내
+- 모든 텍스트 파일은 LF로 저장됩니다. (자동 변환)
+- 에디터에서 CRLF로 저장해도 커밋 시 LF로 바뀝니다.
+- 줄바꿈 관련 경고/충돌은 `git add --renormalize .`로 해결하세요.
+
 ---
 
 **주의사항**: 이 시스템은 의료용 기기가 아닙니다. 건강 관련 결정을 내리기 전에 반드시 의료 전문가와 상담하시기 바랍니다.
+
+---
+
+**작성일**: 2025-05-29  
+**버전**: 1.0  
+**작성자**: AI Assistant

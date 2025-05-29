@@ -8,7 +8,7 @@
 ### 1. TIMESTAMPTZ 지원
 - **기존**: Unix timestamp (float)로 시간 정보 전송
 - **개선**: Asia/Seoul 시간대의 ISO 8601 형식 (TIMESTAMPTZ 호환)
-- **예시**: `2024-01-15T15:30:00+09:00`
+- **예시**: `2025-05-29T15:30:00+09:00`
 
 ### 2. 데이터 구조 개선
 - **기존**: 단순한 센서 데이터
@@ -71,7 +71,7 @@ USER_ID = "raspberry_pi_01"  # 고유 사용자 ID
     "type": "imu_data",
     "data": {
         "user_id": "raspberry_pi_01",
-        "timestamp": "2024-01-15T15:30:00.123456+09:00",
+        "timestamp": "2025-05-29T15:30:00.123456+09:00",
         "acc_x": 0.123,
         "acc_y": -0.456,
         "acc_z": 0.789,
@@ -88,7 +88,7 @@ USER_ID = "raspberry_pi_01"  # 고유 사용자 ID
     "type": "fall_detection",
     "data": {
         "user_id": "raspberry_pi_01",
-        "timestamp": "2024-01-15T15:30:00.123456+09:00",
+        "timestamp": "2025-05-29T15:30:00.123456+09:00",
         "fall_detected": true,
         "confidence_score": 0.85,
         "sensor_data": {
@@ -102,7 +102,7 @@ USER_ID = "raspberry_pi_01"  # 고유 사용자 ID
                 "y": -2.345,
                 "z": 3.456
             },
-            "timestamp": "2024-01-15T15:30:00.123456+09:00"
+            "timestamp": "2025-05-29T15:30:00.123456+09:00"
         }
     }
 }
@@ -165,7 +165,7 @@ async def handle_legacy_data(self, data: dict, user_id: str):
 ### 1. 실시간 로그 확인
 ```bash
 # 라즈베리파이 로그
-Current time (KST): 2024-01-15T15:30:00.123456+09:00
+Current time (KST): 2025-05-29T15:30:00.123456+09:00
 WebSocket transmission status: Connected (queue length: 5)
 
 # 서버 로그
@@ -197,7 +197,7 @@ ORDER BY timestamp DESC;
     "type": "fall_alert",
     "data": {
         "user_id": "raspberry_pi_01",
-        "timestamp": "2024-01-15T15:30:00.123456+09:00",
+        "timestamp": "2025-05-29T15:30:00.123456+09:00",
         "confidence_score": 0.85,
         "message": "사용자 raspberry_pi_01에게 낙상이 감지되었습니다!",
         "urgency": "high"
@@ -253,4 +253,10 @@ except Exception as e:
 3. 시간대 설정
 4. 센서 하드웨어 연결
 
-상세한 로그와 함께 문의해주세요. 
+상세한 로그와 함께 문의해주세요.
+
+---
+
+**작성일**: 2025-05-29  
+**버전**: 1.0  
+**작성자**: AI Assistant 

@@ -234,6 +234,6 @@ const processedData = useMemo(() => {
 
 ---
 
-**작성일**: 2025-01-27  
+**작성일**: 2025-05-29  
 **버전**: 1.0  
 **작성자**: AI Assistant 

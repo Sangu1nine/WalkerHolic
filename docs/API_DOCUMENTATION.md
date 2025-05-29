@@ -1,4 +1,6 @@
-# API 문서
+# 보행 분석 시스템 API 문서
+
+이 문서는 보행 분석 시스템의 REST API 및 WebSocket API에 대한 가이드입니다.
 
 ## 개요
 
@@ -27,14 +29,14 @@ POST /api/imu-data
 **요청 본문:**
 ```json
 {
-  "timestamp": "2024-01-15T14:30:25Z",
+  "user_id": "demo_user",
+  "timestamp": "2025-05-29T14:30:25Z",
   "acc_x": 0.123,
   "acc_y": 0.456,
   "acc_z": 0.789,
   "gyr_x": 0.012,
   "gyr_y": 0.034,
-  "gyr_z": 0.056,
-  "user_id": "demo_user"
+  "gyr_z": 0.056
 }
 ```
 
@@ -42,23 +44,26 @@ POST /api/imu-data
 ```json
 {
   "status": "success",
-  "data": {
-    "id": "uuid",
-    "timestamp": "2024-01-15T14:30:25Z"
-  }
+  "message": "IMU 데이터가 성공적으로 저장되었습니다.",
+  "timestamp": "2025-05-29T14:30:25Z"
 }
 ```
 
 #### 1.2 임베딩 데이터 처리 (보행 분석용)
 ```http
-POST /api/embedding-data?user_id={user_id}
+POST /api/embedding-data
 ```
 
 **요청 본문:**
 ```json
 {
   "user_id": "demo_user",
-  "embedding_data": [0.1, 0.2, 0.3, 0.4, 0.5]
+  "timestamp": "2025-05-29T14:30:25Z",
+  "embedding_vector": [0.1, 0.2, 0.3, 0.4, 0.5],
+  "metadata": {
+    "window_size": 100,
+    "sampling_rate": 50
+  }
 }
 ```
 
@@ -66,14 +71,16 @@ POST /api/embedding-data?user_id={user_id}
 ```json
 {
   "status": "success",
-  "analysis": {
-    "analysis_result": {
-      "gait_pattern": "정상보행",
-      "similarity_score": 0.85,
-      "health_assessment": "낮음",
-      "recommendations": ["권장사항1", "권장사항2"]
-    }
-  }
+  "result": {
+    "gait_pattern": "정상보행",
+    "similarity_score": 0.85,
+    "health_assessment": "낮음",
+    "recommendations": [
+      "규칙적인 운동을 지속하세요.",
+      "균형 잡힌 식단을 유지하세요."
+    ]
+  },
+  "timestamp": "2025-05-29T14:30:25Z"
 }
 ```
 
@@ -91,30 +98,31 @@ POST /api/cognitive-test?user_id={user_id}
   "result": {
     "user_id": "demo_user",
     "test_type": "cognitive",
-    "timestamp": "2024-01-15T14:30:25Z",
+    "timestamp": "2025-05-29T14:30:25Z",
     "scores": {
       "memory": 85,
       "attention": 78,
-      "executive_function": 92,
+      "executive": 82,
       "language": 88,
-      "visuospatial": 82
+      "visuospatial": 75
     },
-    "overall_score": 85,
-    "risk_level": "normal",
+    "total_score": 408,
+    "max_score": 500,
+    "percentage": 81.6,
+    "risk_level": "low",
     "recommendations": [
-      "정기적인 독서와 퍼즐 게임을 권장합니다.",
-      "사회적 활동 참여를 늘려보세요.",
-      "충분한 수면을 취하세요."
+      "인지 능력이 양호합니다.",
+      "독서와 퍼즐 게임을 통해 뇌 활동을 지속하세요.",
+      "규칙적인 운동으로 뇌 건강을 유지하세요."
     ]
   }
 }
 ```
 
 **위험도 등급:**
-- `normal`: 85점 이상 (정상)
-- `mild`: 70-84점 (경미)
-- `moderate`: 55-69점 (보통)
-- `severe`: 54점 이하 (심각)
+- `low`: 80% 이상 (낮음)
+- `medium`: 60-79% (보통)
+- `high`: 60% 미만 (높음)
 
 #### 2.2 낙상 위험도 테스트
 ```http
@@ -128,7 +136,7 @@ POST /api/fall-risk-test?user_id={user_id}
   "result": {
     "user_id": "demo_user",
     "test_type": "fall_risk",
-    "timestamp": "2024-01-15T14:30:25Z",
+    "timestamp": "2025-05-29T14:30:25Z",
     "assessments": {
       "balance": 75,
       "gait_stability": 82,
@@ -186,7 +194,7 @@ GET /api/user/{user_id}/analysis-history
   "status": "success",
   "data": [
     {
-      "timestamp": "2025-05-22T10:30:00",
+      "timestamp": "2025-05-29T10:30:00",
       "gait_pattern": "정상보행",
       "similarity_score": 0.85,
       "health_assessment": "낮음"
@@ -207,7 +215,7 @@ POST /api/chat
 {
   "user_id": "demo_user",
   "message": "안녕하세요",
-  "timestamp": "2024-01-15T14:30:25Z"
+  "timestamp": "2025-05-29T14:30:25Z"
 }
 ```
 
@@ -216,7 +224,7 @@ POST /api/chat
 {
   "status": "success",
   "response": "안녕하세요! 보행 분석 시스템입니다. 어떤 도움이 필요하신가요?",
-  "timestamp": "2024-01-15T14:30:26Z"
+  "timestamp": "2025-05-29T14:30:26Z"
 }
 ```
 
@@ -234,7 +242,7 @@ const ws = new WebSocket('ws://localhost:8000/ws/demo_user');
 {
   "type": "imu_data",
   "data": {
-    "timestamp": "2024-01-15T14:30:25Z",
+    "timestamp": "2025-05-29T14:30:25Z",
     "acc_x": 0.123,
     "acc_y": 0.456,
     "acc_z": 0.789,
@@ -253,7 +261,7 @@ const ws = new WebSocket('ws://localhost:8000/ws/demo_user');
     "gait_pattern": "정상보행",
     "similarity_score": 0.85,
     "health_assessment": "낮음",
-    "timestamp": "2024-01-15T14:30:26Z"
+    "timestamp": "2025-05-29T14:30:26Z"
   }
 }
 ```
@@ -265,7 +273,7 @@ const ws = new WebSocket('ws://localhost:8000/ws/demo_user');
 {
   "status": "error",
   "detail": "에러 메시지",
-  "timestamp": "2024-01-15T14:30:25Z"
+  "timestamp": "2025-05-29T14:30:25Z"
 }
 ```
 
