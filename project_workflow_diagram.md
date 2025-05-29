@@ -89,12 +89,12 @@ graph TB
     
     classDef langchain fill:#1A237E,stroke:#3F51B5,color:#FFFFFF
     classDef serve fill:#E3F2FD,stroke:#2196F3
-    classDef graph fill:#E8F5E8,stroke:#4CAF50
+    classDef graphStyle fill:#E8F5E8,stroke:#4CAF50
     classDef smith fill:#FFF3E0,stroke:#FF9800
     
     class LANGCHAIN langchain
     class SERVE,SERVE_API,SERVE_STREAM,SERVE_DEPLOY serve
-    class GRAPH,GRAPH_STATE,GRAPH_NODE,GRAPH_FLOW graph
+    class GRAPH,GRAPH_STATE,GRAPH_NODE,GRAPH_FLOW graphStyle
     class SMITH,SMITH_TRACE,SMITH_METRIC,SMITH_ANALYSIS smith
 ```
 

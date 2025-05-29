@@ -122,11 +122,11 @@ graph TB
     LANGGRAPH --> AI_AGENTS["AI 에이전트들"]
 
     classDef serve fill:#E3F2FD,stroke:#2196F3,stroke-width:2px
-    classDef graph fill:#E8F5E8,stroke:#4CAF50,stroke-width:2px
+    classDef graphStyle fill:#E8F5E8,stroke:#4CAF50,stroke-width:2px
     classDef smith fill:#FFF3E0,stroke:#FF9800,stroke-width:2px
 
     class LANGSERVE,AUTO_API,STREAMING,DEPLOYMENT,SCALING serve
-    class LANGGRAPH,STATE_GRAPH,NODE_EXEC,CONDITIONAL,ERROR_RECOVERY graph
+    class LANGGRAPH,STATE_GRAPH,NODE_EXEC,CONDITIONAL,ERROR_RECOVERY graphStyle
     class LANGSMITH,TRACING,METRICS,ANALYTICS,OPTIMIZATION smith
 ```
 
